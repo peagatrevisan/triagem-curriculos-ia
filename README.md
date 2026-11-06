@@ -4,19 +4,19 @@
 
 **Stack:** Python · FastAPI · Gemini 2.5 Flash (saída estruturada) · Pydantic · openpyxl · python-docx
 
-> ℹ️ **Sobre este repositório.** Criei e uso este sistema no IEL/SC, nos processos seletivos do SEBRAE/SC. O código de produção e os dados dos candidatos pertencem à instituição e não estão aqui. Este repositório é uma **reimplementação pública**, com o mesmo fluxo e a mesma lógica de avaliação, **candidatos 100% fictícios** e algumas melhorias que aprendi com o uso (seção 5).
+> ℹ️ **Sobre este repositório.** Criei e uso este sistema no meu trabalho, nos processos seletivos de uma entidade do Sistema S. O código de produção e os dados dos candidatos pertencem às instituições e não estão aqui. Este repositório é uma **reimplementação pública**, com o mesmo fluxo e a mesma lógica de avaliação, **candidatos 100% fictícios** e algumas melhorias que aprendi com o uso (seção 5).
 
 ---
 
 ## 1. O problema
 
-Nos processos seletivos que o IEL/SC conduz para o SEBRAE/SC, cada vaga recebe **mais de 1.300 candidatos**. A triagem era manual: a equipe de R&S lia currículo e questionário um por um, comparava com os requisitos do edital, montava a planilha e preenchia um formulário de análise por candidato.
+Nos processos seletivos que a instituição onde trabalho conduz para uma entidade do Sistema S, cada vaga recebe **mais de 1.300 candidatos**. A triagem era manual: a equipe de R&S lia currículo e questionário um por um, comparava com os requisitos do edital, montava a planilha e preenchia um formulário de análise por candidato.
 
 - **cerca de 3 semanas** de trabalho por processo seletivo;
 - equipe de R&S ocupada com leitura repetitiva em vez de entrevistas;
 - critério aplicado de forma desigual ao longo de centenas de leituras.
 
-**Resultado em produção:** triagem, planilha e formulários caíram de cerca de 3 semanas para **2h11 (tempo medido)**, em cerca de 20 processos seletivos até out/2026, com uso aprovado pelo IEL/SC e pelo SEBRAE/SC.
+**Resultado em produção:** triagem, planilha e formulários caíram de cerca de 3 semanas para **2h11 (tempo medido)**, em cerca de 20 processos seletivos até out/2026, com uso aprovado pela instituição e pelo cliente.
 
 ## 2. Por que IA, e não palavras-chave
 
@@ -79,7 +79,7 @@ O progresso é gravado candidato a candidato. Se a execução cair no meio, `--r
 |---|---|
 | Modo JSON sem schema; a resposta era tratada com regex quando vinha fora do formato | **Saída estruturada** (`response_schema` com Pydantic): o formato é garantido e validado |
 | Um candidato por vez, com pausa entre eles (o navegador era o gargalo) | **Avaliação em paralelo**, limitada pela cota da API |
-| Texto do currículo enviado como estava | **Dados pessoais mascarados** antes da chamada (LGPD e redução de viés) |
+| Sem etapa de mascaramento de dados pessoais | **Dados pessoais mascarados** antes da chamada (LGPD e redução de viés) |
 | Requisito que o modelo deixasse de avaliar podia passar despercebido | **Alinhamento com a vaga**: requisito omitido entra como "não atende", com aviso |
 | Sem testes automatizados | **Testes** das regras, da anonimização, da retomada e da API |
 
