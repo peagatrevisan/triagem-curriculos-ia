@@ -1,0 +1,43 @@
+{
+  "codigo": "DEMO-001",
+  "titulo": "Analista de Dados Júnior",
+  "descricao": "Atuação na construção de indicadores, dashboards e análises para as áreas de negócio.",
+  "tempo_minimo_meses": 6,
+  "requisitos": [
+    {
+      "nome": "Graduação completa em Engenharia, Estatística, Computação, Economia, Administração ou áreas afins",
+      "obrigatorio": true,
+      "palavras_chave": ["bacharelado", "graduação em", "formado em", "formada em"]
+    },
+    {
+      "nome": "Experiência profissional mínima de 6 meses com análise de dados",
+      "obrigatorio": true,
+      "palavras_chave": ["análise de dados", "analista de dados", "analista de bi", "dashboards", "indicadores"]
+    },
+    {
+      "nome": "Conhecimento em SQL",
+      "obrigatorio": true,
+      "palavras_chave": ["sql"]
+    },
+    {
+      "nome": "Conhecimento em Python ou R para análise de dados",
+      "obrigatorio": false,
+      "palavras_chave": ["python", "pandas", "linguagem r", "rstudio"]
+    },
+    {
+      "nome": "Experiência com Power BI ou outra ferramenta de visualização de dados",
+      "obrigatorio": false,
+      "palavras_chave": ["power bi", "tableau", "looker", "metabase"]
+    },
+    {
+      "nome": "Inglês intermediário ou superior",
+      "obrigatorio": false,
+      "palavras_chave": ["inglês intermediário", "inglês avançado", "inglês fluente"]
+    }
+  ],
+  "perguntas_eliminatorias": [
+    {"coluna": "PRESENCIAL", "trecho": "trabalho presencial em Florianópolis", "resposta_exigida": "Sim"},
+    {"coluna": "INÍCIO EM 30 DIAS", "trecho": "início em até 30 dias", "resposta_exigida": "Sim"}
+  ],
+  "documentos_exigidos": ["Diploma ou declaração de conclusão", "Comprovação de experiência (carteira ou declaração)"]
+}

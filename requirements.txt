@@ -1,0 +1,15 @@
+fastapi>=0.115
+uvicorn[standard]>=0.30
+python-multipart>=0.0.9
+pydantic>=2.7
+python-dotenv>=1.0
+google-genai>=1.0
+pypdf>=4.0
+python-docx>=1.1
+openpyxl>=3.1
+
+# só para gerar os currículos de exemplo e rodar os testes
+reportlab>=4.0
+pillow>=10.1
+pytest>=8.0
+httpx>=0.27

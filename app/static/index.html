@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Triagem de currículos com IA</title>
+<style>
+  :root { --tinta:#14213d; --suave:#5b6785; --linha:#dde3ee; --fundo:#f5f7fb; --azul:#2952cc;
+          --verde:#1b7f3b; --ambar:#b26b00; --vermelho:#b02418; --cinza:#445577; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:system-ui, -apple-system, "Segoe UI", sans-serif; background:var(--fundo); color:var(--tinta); }
+  main { max-width:960px; margin:0 auto; padding:32px 16px 64px; }
+  h1 { font-size:26px; margin:0 0 4px; }
+  .sub { color:var(--suave); margin:0 0 24px; }
+  .card { background:#fff; border:1px solid var(--linha); border-radius:10px; padding:20px; margin-bottom:16px; }
+  label { display:block; font-weight:600; margin:0 0 6px; }
+  .campo { margin-bottom:16px; }
+  .dica { color:var(--suave); font-size:13px; margin-top:4px; }
+  button { background:var(--azul); color:#fff; border:0; border-radius:8px; padding:10px 18px; font-size:15px; cursor:pointer; }
+  button:disabled { opacity:.6; cursor:wait; }
+  .kpis { display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:10px; }
+  .kpi { border:1px solid var(--linha); border-radius:8px; padding:10px 12px; }
+  .kpi b { display:block; font-size:22px; }
+  .kpi span { color:var(--suave); font-size:13px; }
+  .tabela { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th, td { text-align:left; padding:8px; border-bottom:1px solid var(--linha); vertical-align:top; }
+  th { color:var(--suave); font-weight:600; }
+  .tag { display:inline-block; padding:2px 8px; border-radius:99px; font-size:12px; font-weight:600; color:#fff; white-space:nowrap; }
+  .ADERENTE { background:var(--verde); } .PARCIALMENTE_ADERENTE { background:var(--ambar); }
+  .NAO_ADERENTE { background:var(--vermelho); } .REVISAO_MANUAL { background:var(--cinza); }
+  details summary { cursor:pointer; color:var(--azul); }
+  .erro { color:var(--vermelho); }
+  a.botao { display:inline-block; margin-top:12px; color:var(--azul); font-weight:600; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Triagem de currículos com IA</h1>
+  <p class="sub">Envie a vaga e os candidatos. A IA avalia cada requisito com evidências; as regras eliminatórias e a classificação são aplicadas pelo código, e a decisão continua com a equipe de R&amp;S.</p>
+
+  <form class="card" id="form">
+    <div class="campo">
+      <label for="vaga">Vaga (JSON)</label>
+      <input type="file" id="vaga" accept=".json" required>
+      <div class="dica">Use <code>data/vaga_exemplo.json</code> como modelo.</div>
+    </div>
+    <div class="campo">
+      <label for="candidatos">Candidatos (JSON com currículo e questionário, PDF, DOCX ou TXT)</label>
+      <input type="file" id="candidatos" accept=".json,.pdf,.docx,.txt" multiple required>
+      <div class="dica">Exemplos em <code>data/candidatos/</code>.</div>
+    </div>
+    <button type="submit" id="enviar">Fazer triagem</button>
+    <p id="status" class="dica" role="status"></p>
+  </form>
+
+  <section id="resultado" hidden>
+    <div class="card">
+      <div class="kpis" id="kpis"></div>
+      <a class="botao" id="baixar" href="#">Baixar Excel + pareceres em Word (.zip)</a> &nbsp; <a class="botao" id="planilha" href="#">Só a planilha</a>
+    </div>
+    <div class="card tabela"><table id="ranking"></table></div>
+  </section>
+</main>
+<script>
+const ROTULO = { ADERENTE:"Atende", PARCIALMENTE_ADERENTE:"Atende parcialmente", NAO_ADERENTE:"Não atende", REVISAO_MANUAL:"Revisão manual" };
+const RESULT = { ATENDE:"Atende", ATENDE_PARCIALMENTE:"Parcial", NAO_ATENDE:"Não atende" };
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+
+document.getElementById("form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const botao = document.getElementById("enviar"), status = document.getElementById("status");
+  const dados = new FormData();
+  dados.append("vaga", document.getElementById("vaga").files[0]);
+  for (const f of document.getElementById("candidatos").files) dados.append("candidatos", f);
+  botao.disabled = true; status.className = "dica"; status.textContent = "Avaliando candidatos...";
+  try {
+    const resp = await fetch("/api/triagem", { method:"POST", body:dados });
+    const json = await resp.json();
+    if (!resp.ok) throw new Error(json.detail || "Erro na triagem");
+    mostrar(json); status.textContent = `Concluído em ${json.segundos.toFixed(1)} s · modo: ${json.modo}`;
+  } catch (err) {
+    status.className = "erro"; status.textContent = err.message;
+  } finally { botao.disabled = false; }
+});
+
+function mostrar(r) {
+  const c = r.por_classificacao;
+  document.getElementById("kpis").innerHTML = [
+    ["Candidatos", r.total], ["Atendem", c.ADERENTE], ["Parcialmente", c.PARCIALMENTE_ADERENTE],
+    ["Não atendem", c.NAO_ADERENTE], ["Revisão manual", c.REVISAO_MANUAL], ["Tempo", r.segundos.toFixed(1) + " s"],
+  ].map(([t, v]) => `<div class="kpi"><b>${esc(v)}</b><span>${esc(t)}</span></div>`).join("");
+  document.getElementById("baixar").href = `/api/triagem/${r.id}/pacote`;
+  document.getElementById("planilha").href = `/api/triagem/${r.id}/planilha`;
+  document.getElementById("ranking").innerHTML =
+    `<thead><tr><th>#</th><th>Candidato</th><th>Classificação</th><th>Nota</th><th>Detalhes</th></tr></thead><tbody>` +
+    r.resultados.map((x, i) => `<tr><td>${i + 1}</td><td>${esc(x.id)}</td>
+      <td><span class="tag ${x.classificacao}">${ROTULO[x.classificacao]}</span></td>
+      <td>${x.avaliacoes.length ? x.nota.toFixed(0) : "—"}</td>
+      <td>${x.motivo ? `<div>${esc(x.motivo)}</div>` : ""}${x.avaliacoes.length ? `<details><summary>ver parecer</summary>${esc(x.resumo)}<ul>` +
+        x.avaliacoes.map(a => `<li><b>${RESULT[a.status]}</b>${a.alterado_pelo_questionario ? " (pelo questionário)" : ""} · ${esc(a.requisito)}: ${esc(a.justificativa)}</li>`).join("") +
+        `</ul>${x.observacao_final ? `<p>${esc(x.observacao_final)}</p>` : ""}</details>` : ""}</td></tr>`).join("") + `</tbody>`;
+  document.getElementById("resultado").hidden = false;
+}
+</script>
+</body>
+</html>
